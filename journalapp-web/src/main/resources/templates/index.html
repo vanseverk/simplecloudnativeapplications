@@ -1,0 +1,13 @@
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<title>journalapp-web</title>
+</head>
+<body>
+<form action="#" th:action="@{/save}" method="post">
+    <p>Message: <input type="textfield" name="text" th:value="${text}" /></p>
+    <p><input type="submit" value="Submit" />
+    </p>
+</form>
+<p th:if="${error != null}" th:text="'An error occurred: ' + ${error}" style="color:red;"></p>
+</body>
+</html>
