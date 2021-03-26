@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-02-18T18:52:05Z
+  name: journalapp-web-config
+  namespace: journalapp
+data:
+  application.properties: |
+    server.port: 8080
+    fileservice.location: http://fileservice
+    management.endpoints.web.exposure.include=*
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: journalapp-web
+  labels:
+    app: journalapp-web
+  namespace: journalapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: journalapp-web
+  template:
+    metadata:
+      labels:
+        app: journalapp-web
+    spec:
+      containers:
+        - name: journalapp-web-container
+          image: vanseverk/journalapp-web:0.0.1
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+          volumeMounts:
+            - name: config-volume
+              mountPath: /workspace/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: journalapp-web-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: journalapp-web
+  namespace: journalapp
+spec:
+  selector:
+    app: journalapp-web
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: LoadBalancer

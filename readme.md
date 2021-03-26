@@ -10,3 +10,11 @@ Two Spring Boot applications ready to be put on a Cloud Native platform.
 * Simple backend application, offering an API through Spring REST
 * Requires to be exposed to the journalapp-web through HTTP
 * Requires to be able to read and write to a file
+
+
+##building the images
+```
+mvn spring-boot:build-image
+docker tag <existing-image> <hub-user>/<repo-name>[:<tag>]
+docker push <hub-user>/<repo-name>:<tag>
+```

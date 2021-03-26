@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-02-18T18:52:05Z
+  name: journalapp-backend-config
+  namespace: journalapp
+data:
+  application.properties: |
+    server.port: 8080
+    storage.filelocation: /var/storage/file.txt
+    management.endpoints.web.exposure.include=*
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: journalapp-backend
+  labels:
+    app: journalapp-backend
+  namespace: journalapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: journalapp-backend
+  template:
+    metadata:
+      labels:
+        app: journalapp-backend
+    spec:
+      securityContext: #Required for storage on PVC, otherwise we wouldn't be allowed to create a file
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+      containers:
+        - name: journalapp-backend-container
+          image: vanseverk/journalapp-backend:0.0.1
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            initialDelaySeconds: 30
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 30
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+          volumeMounts:
+            - name: config-volume
+              mountPath: /workspace/config
+            - name: storage
+              mountPath: /var/storage
+      volumes:
+        - name: config-volume
+          configMap:
+            name: journalapp-backend-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: journalapp-backend-pvc
+          #emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: journalapp-backend-pvc
+spec:
+  storageClassName: thin-disk
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fileservice
+  namespace: journalapp
+spec:
+  selector:
+    app: journalapp-backend
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: NodePort
