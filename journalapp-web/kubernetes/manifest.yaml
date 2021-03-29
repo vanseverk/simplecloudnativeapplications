@@ -8,7 +8,7 @@ data:
   application.properties: |
     server.port: 8080
     fileservice.location: http://fileservice
-    management.endpoints.web.exposure.include=*
+    management.endpoints.web.exposure.include: *
 ---
 apiVersion: apps/v1
 kind: Deployment

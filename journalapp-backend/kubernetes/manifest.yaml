@@ -8,7 +8,7 @@ data:
   application.properties: |
     server.port: 8080
     storage.filelocation: /var/storage/file.txt
-    management.endpoints.web.exposure.include=*
+    management.endpoints.web.exposure.include: *
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -56,9 +56,9 @@ spec:
           configMap:
             name: journalapp-backend-config
         - name: storage
-          persistentVolumeClaim:
-            claimName: journalapp-backend-pvc
-          #emptyDir: {}
+          #persistentVolumeClaim:
+          #  claimName: journalapp-backend-pvc
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
